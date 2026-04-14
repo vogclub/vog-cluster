@@ -40,8 +40,8 @@ func TestRoundtripGameRegister(t *testing.T) {
 	received := make(chan vogcluster.GameRegister, 1)
 	sub, err := nc.Subscribe(vogcluster.SubjectClusterGameRegister, func(m *nats.Msg) {
 		var msg vogcluster.GameRegister
-		if err := vogcluster.Decode(m.Data, &msg); err != nil {
-			t.Errorf("decode: %v", err)
+		if decErr := vogcluster.Decode(m.Data, &msg); decErr != nil {
+			t.Errorf("decode: %v", decErr)
 			return
 		}
 		received <- msg
@@ -49,7 +49,7 @@ func TestRoundtripGameRegister(t *testing.T) {
 	if err != nil {
 		t.Fatalf("subscribe: %v", err)
 	}
-	defer sub.Unsubscribe()
+	defer func() { _ = sub.Unsubscribe() }()
 
 	original := vogcluster.GameRegister{
 		InstanceID: "game-7",
@@ -94,8 +94,8 @@ func TestRoundtripRoomBroadcastWithDynamicSubject(t *testing.T) {
 	received := make(chan vogcluster.RoomBroadcast, 1)
 	sub, err := nc.Subscribe(subject, func(m *nats.Msg) {
 		var msg vogcluster.RoomBroadcast
-		if err := vogcluster.Decode(m.Data, &msg); err != nil {
-			t.Errorf("decode: %v", err)
+		if decErr := vogcluster.Decode(m.Data, &msg); decErr != nil {
+			t.Errorf("decode: %v", decErr)
 			return
 		}
 		received <- msg
@@ -103,7 +103,7 @@ func TestRoundtripRoomBroadcastWithDynamicSubject(t *testing.T) {
 	if err != nil {
 		t.Fatalf("subscribe: %v", err)
 	}
-	defer sub.Unsubscribe()
+	defer func() { _ = sub.Unsubscribe() }()
 
 	original := vogcluster.RoomBroadcast{
 		Event:    "table.move",
@@ -146,8 +146,8 @@ func TestSubscribeWithWildcard(t *testing.T) {
 	received := make(chan vogcluster.GameHeartbeat, 4)
 	sub, err := nc.Subscribe("vog.cluster.game.heartbeat.*", func(m *nats.Msg) {
 		var msg vogcluster.GameHeartbeat
-		if err := vogcluster.Decode(m.Data, &msg); err != nil {
-			t.Errorf("decode: %v", err)
+		if decErr := vogcluster.Decode(m.Data, &msg); decErr != nil {
+			t.Errorf("decode: %v", decErr)
 			return
 		}
 		received <- msg
@@ -155,7 +155,7 @@ func TestSubscribeWithWildcard(t *testing.T) {
 	if err != nil {
 		t.Fatalf("subscribe: %v", err)
 	}
-	defer sub.Unsubscribe()
+	defer func() { _ = sub.Unsubscribe() }()
 
 	for _, id := range []string{"game-1", "game-2", "game-3"} {
 		hb := vogcluster.GameHeartbeat{
