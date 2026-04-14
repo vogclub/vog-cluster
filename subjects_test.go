@@ -187,3 +187,27 @@ func TestRequiresJetStreamUnknownReturnsFalse(t *testing.T) {
 		t.Errorf("non-vog subject should return false")
 	}
 }
+
+func TestAdminAndInstanceStatusSubjects(t *testing.T) {
+	cases := []struct {
+		name      string
+		subject   string
+		jetstream bool
+	}{
+		{"admin migrate", SubjectClusterAdminMigrate, true},
+		{"admin drain", SubjectClusterAdminDrain, true},
+		{"admin rebalance", SubjectClusterAdminRebalance, true},
+		{"room ready", SubjectClusterRoomReady(1, 101), true},
+		{"instance status", SubjectClusterInstanceStatus("game-1"), true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.subject == "" {
+				t.Fatalf("empty subject")
+			}
+			if got := RequiresJetStream(tc.subject); got != tc.jetstream {
+				t.Fatalf("RequiresJetStream(%q) = %v, want %v", tc.subject, got, tc.jetstream)
+			}
+		})
+	}
+}
