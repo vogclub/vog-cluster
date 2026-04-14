@@ -38,7 +38,7 @@ type RoomReady struct {
 	MigrationID string    `json:"migration_id"`
 	InstanceID  string    `json:"instance_id"`
 	RoomID      string    `json:"room_id"`
-	ReadyAt     time.Time `json:"ready_at,omitempty"`
+	ReadyAt     time.Time `json:"ready_at"`
 }
 
 // Validate reports whether the message is well-formed.
@@ -82,6 +82,12 @@ func (m InstanceRegisterReply) Validate() error {
 // admin → NATS request-reply) to move a single room from its current
 // instance to a specific target instance. Published on
 // SubjectClusterAdminMigrate.
+//
+// Note: ServerID and RoomID are int here (not a compound string key
+// like elsewhere in the package) because this type is the wire shape of
+// the HTTP operator API, which takes numeric form params. The
+// coordinator combines them into the canonical "{server_id}:{room_id}"
+// key before looking up routing state or publishing downstream events.
 type AdminMigrateRequest struct {
 	ServerID   int    `json:"server_id"`
 	RoomID     int    `json:"room_id"`
@@ -169,7 +175,7 @@ type AdminRebalanceResponse struct {
 type InstanceStatusEvent struct {
 	InstanceID string         `json:"instance_id"`
 	Status     InstanceStatus `json:"status"`
-	ChangedAt  time.Time      `json:"changed_at,omitempty"`
+	ChangedAt  time.Time      `json:"changed_at"`
 	Reason     string         `json:"reason,omitempty"`
 }
 

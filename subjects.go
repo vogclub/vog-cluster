@@ -100,6 +100,22 @@ func SubjectRatingUpdated(gameType string) string {
 	return buildSubject("vog.rating.updated", gameType)
 }
 
+// SubjectClusterRoomReady returns the subject a target instance
+// publishes a RoomReady event on after a migration has committed.
+// The tuple (serverID, roomID) is encoded as "{serverID}_{roomID}"
+// because NATS subject tokens cannot contain dots or colons.
+func SubjectClusterRoomReady(serverID, roomID int) string {
+	token := fmt.Sprintf("%d_%d", serverID, roomID)
+	return buildSubject("vog.cluster.room.ready", token)
+}
+
+// SubjectClusterInstanceStatus returns the subject the coordinator
+// publishes InstanceStatusEvent on whenever an instance status
+// changes.
+func SubjectClusterInstanceStatus(instanceID string) string {
+	return buildSubject("vog.cluster.instance.status", instanceID)
+}
+
 // RequiresJetStream reports whether the given subject must be backed
 // by a JetStream stream rather than plain Core NATS. The classification
 // matches the spec's transport table.
@@ -127,22 +143,6 @@ func RequiresJetStream(subject string) bool {
 		return false
 	}
 	return false
-}
-
-// SubjectClusterRoomReady returns the subject a target instance
-// publishes a RoomReady event on after a migration has committed.
-// The tuple (serverID, roomID) is encoded as "{serverID}_{roomID}"
-// because NATS subject tokens cannot contain dots or colons.
-func SubjectClusterRoomReady(serverID, roomID int) string {
-	token := fmt.Sprintf("%d_%d", serverID, roomID)
-	return buildSubject("vog.cluster.room.ready", token)
-}
-
-// SubjectClusterInstanceStatus returns the subject the coordinator
-// publishes InstanceStatusEvent on whenever an instance status
-// changes.
-func SubjectClusterInstanceStatus(instanceID string) string {
-	return buildSubject("vog.cluster.instance.status", instanceID)
 }
 
 // buildSubject joins a prefix with a single token, validating the token.
