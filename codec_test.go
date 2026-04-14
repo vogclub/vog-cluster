@@ -7,10 +7,6 @@ import (
 	"testing"
 )
 
-type validatable interface {
-	Validate() error
-}
-
 func TestEncodeProducesCompactJSON(t *testing.T) {
 	msg := GameRegister{
 		InstanceID: "game-7", Capacity: 1000, Version: "1.0", Address: "h:9",
@@ -71,20 +67,20 @@ func TestDecodeRejectsInvalidPayload(t *testing.T) {
 
 func TestEncodeAcceptsValidator(t *testing.T) {
 	// Compile-time check: every message type with Validate satisfies
-	// the validator interface used by Encode/Decode.
-	var _ validatable = GameRegister{}
-	var _ validatable = GameHeartbeat{}
-	var _ validatable = GameDrain{}
-	var _ validatable = GameDeregister{}
-	var _ validatable = RoomConfig{}
-	var _ validatable = RoomAssign{}
-	var _ validatable = RoomRelease{}
-	var _ validatable = RoomPrepare{}
-	var _ validatable = RoutingUpdate{}
-	var _ validatable = ClusterCommand{}
-	var _ validatable = RoomInput{}
-	var _ validatable = RoomBroadcast{}
-	var _ validatable = LobbyOutput{}
-	var _ validatable = StatsOnline{}
-	var _ validatable = RatingUpdated{}
+	// the Validator interface used by Encode/Decode.
+	var _ Validator = GameRegister{}
+	var _ Validator = GameHeartbeat{}
+	var _ Validator = GameDrain{}
+	var _ Validator = GameDeregister{}
+	var _ Validator = RoomConfig{}
+	var _ Validator = RoomAssign{}
+	var _ Validator = RoomRelease{}
+	var _ Validator = RoomPrepare{}
+	var _ Validator = RoutingUpdate{}
+	var _ Validator = ClusterCommand{}
+	var _ Validator = RoomInput{}
+	var _ Validator = RoomBroadcast{}
+	var _ Validator = LobbyOutput{}
+	var _ Validator = StatsOnline{}
+	var _ Validator = RatingUpdated{}
 }
