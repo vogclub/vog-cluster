@@ -61,13 +61,31 @@ func TestSubjectBuildersRejectEmpty(t *testing.T) {
 }
 
 func TestSubjectBuildersRejectInvalid(t *testing.T) {
-	// NATS subject tokens must not contain dots, spaces, or wildcards.
-	defer func() {
-		if recover() == nil {
-			t.Errorf("expected panic on invalid token")
-		}
-	}()
-	_ = SubjectGameRoomInput("foo.bar")
+	// NATS subject tokens must not contain dots, whitespace, control
+	// characters, or wildcard characters.
+	cases := []struct {
+		name  string
+		token string
+	}{
+		{"dot", "foo.bar"},
+		{"space", "foo bar"},
+		{"tab", "foo\tbar"},
+		{"newline", "foo\nbar"},
+		{"carriage_return", "foo\rbar"},
+		{"null", "foo\x00bar"},
+		{"asterisk", "foo*"},
+		{"greater_than", "foo>"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			defer func() {
+				if recover() == nil {
+					t.Errorf("expected panic on token %q", tc.token)
+				}
+			}()
+			_ = SubjectGameRoomInput(tc.token)
+		})
+	}
 }
 
 func TestRequiresJetStream(t *testing.T) {
@@ -116,5 +134,56 @@ func TestSubjectsAreUniquePrefixes(t *testing.T) {
 		if !strings.HasPrefix(s, "vog.") {
 			t.Errorf("subject %q does not start with vog.", s)
 		}
+	}
+}
+
+func TestRequiresJetStreamCoversAllKnownSubjects(t *testing.T) {
+	// Every subject this package can produce must be explicitly
+	// classified by RequiresJetStream. If you add a new subject and
+	// this test fails, add the corresponding case to the switch.
+	known := []string{
+		SubjectClusterGameRegister,
+		SubjectClusterRoutingUpdate,
+		SubjectStatsOnline,
+		SubjectClusterGameHeartbeat("x"),
+		SubjectClusterGameDrain("x"),
+		SubjectClusterGameDeregister("x"),
+		SubjectClusterRoomsAssign("x"),
+		SubjectClusterRoomsRelease("x"),
+		SubjectClusterRoomsPrepare("x"),
+		SubjectClusterCommand("x"),
+		SubjectGameRoomInput("x"),
+		SubjectGameRoomBroadcast("x"),
+		SubjectLobbyOutput("x"),
+		SubjectRatingUpdated("x"),
+	}
+	// Build the set of expected JetStream subjects from the spec.
+	jetstream := map[string]bool{
+		SubjectClusterGameRegister:        true,
+		SubjectClusterRoutingUpdate:       true,
+		SubjectClusterGameHeartbeat("x"):  true,
+		SubjectClusterGameDrain("x"):      true,
+		SubjectClusterGameDeregister("x"): true,
+		SubjectClusterRoomsAssign("x"):    true,
+		SubjectClusterRoomsRelease("x"):   true,
+		SubjectClusterRoomsPrepare("x"):   true,
+		SubjectClusterCommand("x"):        true,
+		SubjectRatingUpdated("x"):         true,
+	}
+	for _, subj := range known {
+		got := RequiresJetStream(subj)
+		want := jetstream[subj]
+		if got != want {
+			t.Errorf("RequiresJetStream(%q) = %v, want %v", subj, got, want)
+		}
+	}
+}
+
+func TestRequiresJetStreamUnknownReturnsFalse(t *testing.T) {
+	if RequiresJetStream("vog.future.thing") != false {
+		t.Errorf("unknown subject should default to Core NATS (false)")
+	}
+	if RequiresJetStream("not.a.vog.subject") != false {
+		t.Errorf("non-vog subject should return false")
 	}
 }

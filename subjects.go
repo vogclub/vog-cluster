@@ -66,20 +66,20 @@ func SubjectClusterCommand(instanceID string) string {
 // SubjectGameRoomInput returns the subject Lobby uses to deliver
 // player actions to the game instance hosting the given room.
 func SubjectGameRoomInput(roomID string) string {
-	return buildRoomSubject(roomID, "input")
+	return buildTripleSubject("vog.game.room", roomID, "input")
 }
 
 // SubjectGameRoomBroadcast returns the subject a game instance
 // publishes room events to. All Lobby instances with clients in
 // the room subscribe to it.
 func SubjectGameRoomBroadcast(roomID string) string {
-	return buildRoomSubject(roomID, "broadcast")
+	return buildTripleSubject("vog.game.room", roomID, "broadcast")
 }
 
 // SubjectLobbyOutput returns the subject a game instance uses to
 // deliver targeted messages to a specific Lobby instance.
 func SubjectLobbyOutput(lobbyInstanceID string) string {
-	return buildSubject("vog.lobby", lobbyInstanceID) + ".output"
+	return buildTripleSubject("vog.lobby", lobbyInstanceID, "output")
 }
 
 // SubjectRatingUpdated returns the subject vog-games publishes
@@ -91,6 +91,14 @@ func SubjectRatingUpdated(gameType string) string {
 // RequiresJetStream reports whether the given subject must be backed
 // by a JetStream stream rather than plain Core NATS. The classification
 // matches the spec's transport table.
+//
+// Only subjects defined in this package are classified. Any subject
+// outside the known prefixes returns false (Core NATS) — this is the
+// safe default for unknown traffic, but means that any new subject
+// added to this package MUST also be added to the switch below.
+// Forgetting to do so causes silent loss for messages that should have
+// been durable. Tests in subjects_test.go enforce that every defined
+// subject is covered.
 func RequiresJetStream(subject string) bool {
 	switch {
 	case subject == SubjectClusterRoutingUpdate:
@@ -115,10 +123,11 @@ func buildSubject(prefix, token string) string {
 	return prefix + "." + token
 }
 
-// buildRoomSubject builds a "vog.game.room.{id}.{suffix}" subject.
-func buildRoomSubject(roomID, suffix string) string {
-	mustValidToken(roomID)
-	return "vog.game.room." + roomID + "." + suffix
+// buildTripleSubject builds a "{prefix}.{token}.{suffix}" subject,
+// validating the token.
+func buildTripleSubject(prefix, token, suffix string) string {
+	mustValidToken(token)
+	return prefix + "." + token + "." + suffix
 }
 
 // mustValidToken panics if token is empty or contains characters that
@@ -127,7 +136,7 @@ func mustValidToken(token string) {
 	if token == "" {
 		panic("vogcluster: empty subject token")
 	}
-	if strings.ContainsAny(token, ". \t*>") {
+	if strings.ContainsAny(token, ". \t\n\r\x00*>") {
 		panic(fmt.Sprintf("vogcluster: invalid subject token %q", token))
 	}
 }
