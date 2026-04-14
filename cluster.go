@@ -67,6 +67,23 @@ type RoomLoad struct {
 	SlotsUsed int    `json:"slots_used"`
 }
 
+// Validate reports whether the per-room load report is well-formed.
+func (r RoomLoad) Validate() error {
+	if r.RoomID == "" {
+		return errors.New("vogcluster: RoomLoad.room_id is required")
+	}
+	if r.Tables < 0 {
+		return fmt.Errorf("vogcluster: RoomLoad.tables must be non-negative, got %d", r.Tables)
+	}
+	if r.Players < 0 {
+		return fmt.Errorf("vogcluster: RoomLoad.players must be non-negative, got %d", r.Players)
+	}
+	if r.SlotsUsed < 0 {
+		return fmt.Errorf("vogcluster: RoomLoad.slots_used must be non-negative, got %d", r.SlotsUsed)
+	}
+	return nil
+}
+
 // GameHeartbeat is published periodically (~5s) by each active game
 // instance on subject SubjectClusterGameHeartbeat(instance_id).
 type GameHeartbeat struct {
@@ -94,6 +111,11 @@ func (m GameHeartbeat) Validate() error {
 	}
 	if m.SlotsUsed > m.SlotsTotal {
 		return fmt.Errorf("vogcluster: GameHeartbeat.slots_used (%d) exceeds slots_total (%d)", m.SlotsUsed, m.SlotsTotal)
+	}
+	for i, r := range m.Rooms {
+		if err := r.Validate(); err != nil {
+			return fmt.Errorf("vogcluster: GameHeartbeat.rooms[%d]: %w", i, err)
+		}
 	}
 	return nil
 }

@@ -123,5 +123,3 @@ go test ./...
 The integration tests start an embedded NATS server (no external
 dependencies) and exercise full publish/subscribe roundtrips for
 representative message types.
-</content>
-</invoke>

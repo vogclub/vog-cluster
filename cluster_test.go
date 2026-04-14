@@ -138,10 +138,42 @@ func TestGameHeartbeatValidate(t *testing.T) {
 		{"slots used > total", GameHeartbeat{InstanceID: "g", Status: InstanceStatusActive, SlotsUsed: 2000, SlotsTotal: 1000}},
 		{"negative slots used", GameHeartbeat{InstanceID: "g", Status: InstanceStatusActive, SlotsUsed: -1, SlotsTotal: 1000}},
 		{"zero total slots", GameHeartbeat{InstanceID: "g", Status: InstanceStatusActive}},
+		{"bad nested room", GameHeartbeat{
+			InstanceID: "g", Status: InstanceStatusActive, SlotsTotal: 1000,
+			Rooms: []RoomLoad{{RoomID: "", Tables: 1, Players: 1, SlotsUsed: 1}},
+		}},
+		{"negative room tables", GameHeartbeat{
+			InstanceID: "g", Status: InstanceStatusActive, SlotsTotal: 1000,
+			Rooms: []RoomLoad{{RoomID: "r", Tables: -1}},
+		}},
 	}
 	for _, tc := range invalid {
 		t.Run(tc.name, func(t *testing.T) {
 			if err := tc.msg.Validate(); err == nil {
+				t.Errorf("expected validation error, got nil")
+			}
+		})
+	}
+}
+
+func TestRoomLoadValidate(t *testing.T) {
+	valid := RoomLoad{RoomID: "r", Tables: 10, Players: 50, SlotsUsed: 150}
+	if err := valid.Validate(); err != nil {
+		t.Errorf("valid room load returned error: %v", err)
+	}
+
+	tests := []struct {
+		name string
+		load RoomLoad
+	}{
+		{"empty room_id", RoomLoad{Tables: 1, Players: 1, SlotsUsed: 1}},
+		{"negative tables", RoomLoad{RoomID: "r", Tables: -1}},
+		{"negative players", RoomLoad{RoomID: "r", Players: -1}},
+		{"negative slots_used", RoomLoad{RoomID: "r", SlotsUsed: -1}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := tc.load.Validate(); err == nil {
 				t.Errorf("expected validation error, got nil")
 			}
 		})
