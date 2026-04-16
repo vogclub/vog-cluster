@@ -47,3 +47,48 @@ func TestLobbyOutputValidate(t *testing.T) {
 		t.Errorf("no targets should fail")
 	}
 }
+
+func TestSessionEventValidate(t *testing.T) {
+	valid := &SessionEvent{UserID: "u1", RoomID: "r1", Action: "enter"}
+	if err := valid.Validate(); err != nil {
+		t.Errorf("valid SessionEvent returned error: %v", err)
+	}
+
+	if err := (&SessionEvent{RoomID: "r1", Action: "enter"}).Validate(); err == nil {
+		t.Error("missing UserID should fail")
+	}
+	if err := (&SessionEvent{UserID: "u1", Action: "enter"}).Validate(); err == nil {
+		t.Error("missing RoomID should fail")
+	}
+	if err := (&SessionEvent{UserID: "u1", RoomID: "r1"}).Validate(); err == nil {
+		t.Error("missing Action should fail")
+	}
+}
+
+func TestSessionEventRoundtrip(t *testing.T) {
+	original := &SessionEvent{
+		UserID:     "user-42",
+		RoomID:     "room-7",
+		Action:     "enter",
+		IP:         "192.168.1.1",
+		ClientType: "web",
+	}
+	data, err := Encode(original)
+	if err != nil {
+		t.Fatalf("Encode: %v", err)
+	}
+	var decoded SessionEvent
+	if err := Decode(data, &decoded); err != nil {
+		t.Fatalf("Decode: %v", err)
+	}
+	if !reflect.DeepEqual(*original, decoded) {
+		t.Errorf("roundtrip mismatch:\noriginal: %+v\ndecoded:  %+v", *original, decoded)
+	}
+}
+
+func TestSessionEventEncodeRejectsInvalid(t *testing.T) {
+	invalid := &SessionEvent{RoomID: "r1", Action: "enter"} // missing UserID
+	if _, err := Encode(invalid); err == nil {
+		t.Error("Encode should reject invalid SessionEvent")
+	}
+}

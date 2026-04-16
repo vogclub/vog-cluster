@@ -14,6 +14,9 @@ func TestStaticSubjects(t *testing.T) {
 		{"ClusterGameRegister", SubjectClusterGameRegister, "vog.cluster.game.register"},
 		{"ClusterRoutingUpdate", SubjectClusterRoutingUpdate, "vog.cluster.routing.update"},
 		{"StatsOnline", SubjectStatsOnline, "vog.stats.online"},
+		{"ClusterRoutingSnapshot", SubjectClusterRoutingSnapshot, "vog.cluster.routing.snapshot"},
+		{"LobbySessionEnter", SubjectLobbySessionEnter, "vog.lobby.session.enter"},
+		{"LobbySessionExit", SubjectLobbySessionExit, "vog.lobby.session.exit"},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -99,6 +102,7 @@ func TestRequiresJetStream(t *testing.T) {
 		SubjectClusterRoomsPrepare("game-7"),
 		SubjectClusterCommand("game-7"),
 		SubjectClusterRoutingUpdate,
+		SubjectClusterRoutingSnapshot,
 		SubjectRatingUpdated("chess"),
 	}
 	for _, s := range jsSubjects {
@@ -112,6 +116,8 @@ func TestRequiresJetStream(t *testing.T) {
 		SubjectGameRoomBroadcast("42"),
 		SubjectLobbyOutput("lobby-2"),
 		SubjectStatsOnline,
+		SubjectLobbySessionEnter,
+		SubjectLobbySessionExit,
 	}
 	for _, s := range coreSubjects {
 		if RequiresJetStream(s) != false {
@@ -144,6 +150,7 @@ func TestRequiresJetStreamCoversAllKnownSubjects(t *testing.T) {
 	known := []string{
 		SubjectClusterGameRegister,
 		SubjectClusterRoutingUpdate,
+		SubjectClusterRoutingSnapshot,
 		SubjectStatsOnline,
 		SubjectClusterAdminMigrate,
 		SubjectClusterAdminDrain,
@@ -158,6 +165,8 @@ func TestRequiresJetStreamCoversAllKnownSubjects(t *testing.T) {
 		SubjectClusterRoomReady(1, 101),
 		SubjectClusterInstanceStatus("game-1"),
 		SubjectClusterRoomsAssignRequest,
+		SubjectLobbySessionEnter,
+		SubjectLobbySessionExit,
 		SubjectGameRoomInput("x"),
 		SubjectGameRoomBroadcast("x"),
 		SubjectLobbyOutput("x"),
@@ -167,6 +176,7 @@ func TestRequiresJetStreamCoversAllKnownSubjects(t *testing.T) {
 	jetstream := map[string]bool{
 		SubjectClusterGameRegister:             true,
 		SubjectClusterRoutingUpdate:            true,
+		SubjectClusterRoutingSnapshot:          true,
 		SubjectClusterAdminMigrate:             true,
 		SubjectClusterAdminDrain:               true,
 		SubjectClusterAdminRebalance:           true,
@@ -177,10 +187,10 @@ func TestRequiresJetStreamCoversAllKnownSubjects(t *testing.T) {
 		SubjectClusterRoomsRelease("x"):        true,
 		SubjectClusterRoomsPrepare("x"):        true,
 		SubjectClusterCommand("x"):             true,
-		SubjectClusterRoomReady(1, 101):         true,
-		SubjectClusterInstanceStatus("game-1"):  true,
-		SubjectClusterRoomsAssignRequest:        true,
-		SubjectRatingUpdated("x"):               true,
+		SubjectClusterRoomReady(1, 101):        true,
+		SubjectClusterInstanceStatus("game-1"): true,
+		SubjectClusterRoomsAssignRequest:       true,
+		SubjectRatingUpdated("x"):              true,
 	}
 	for _, subj := range known {
 		got := RequiresJetStream(subj)

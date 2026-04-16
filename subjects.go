@@ -35,6 +35,18 @@ const (
 	// SubjectClusterRoomsAssignRequest is the request-reply subject for
 	// on-demand room assignment. vog-spaces API sends, coordinator replies.
 	SubjectClusterRoomsAssignRequest = "vog.cluster.rooms.assign.request"
+
+	// SubjectClusterRoutingSnapshot is a NATS request-reply subject.
+	// Lobby instances request the full routing table from the coordinator.
+	SubjectClusterRoutingSnapshot = "vog.cluster.routing.snapshot"
+
+	// SubjectLobbySessionEnter is published by lobby instances when a user
+	// enters a room. Consumed by vog-spaces for session tracking.
+	SubjectLobbySessionEnter = "vog.lobby.session.enter"
+
+	// SubjectLobbySessionExit is published by lobby instances when a user
+	// leaves a room or disconnects. Consumed by vog-spaces for session tracking.
+	SubjectLobbySessionExit = "vog.lobby.session.exit"
 )
 
 // SubjectClusterGameHeartbeat returns the subject a specific game

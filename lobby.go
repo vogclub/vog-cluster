@@ -3,6 +3,7 @@ package vogcluster
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -44,6 +45,30 @@ func (m LobbyOutput) Validate() error {
 	}
 	if len(m.TargetUserIDs) == 0 && len(m.TargetConnIDs) == 0 {
 		return errors.New("vogcluster: LobbyOutput requires at least one target_user_id or target_conn_id")
+	}
+	return nil
+}
+
+// SessionEvent is published by lobby instances to track user room presence.
+// Published on SubjectLobbySessionEnter / SubjectLobbySessionExit.
+type SessionEvent struct {
+	UserID     string `json:"user_id"`
+	RoomID     string `json:"room_id"`
+	Action     string `json:"action"`
+	IP         string `json:"ip,omitempty"`
+	ClientType string `json:"client_type,omitempty"`
+}
+
+// Validate implements Validator.
+func (e *SessionEvent) Validate() error {
+	if e.UserID == "" {
+		return fmt.Errorf("session event: user_id required")
+	}
+	if e.RoomID == "" {
+		return fmt.Errorf("session event: room_id required")
+	}
+	if e.Action == "" {
+		return fmt.Errorf("session event: action required")
 	}
 	return nil
 }
