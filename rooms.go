@@ -104,6 +104,44 @@ func (m RoomRelease) Validate() error {
 	return nil
 }
 
+// RoomAssignRequest is sent by vog-spaces API to the coordinator to
+// request on-demand assignment of a room to a game instance.
+// Subject: SubjectClusterRoomsAssignRequest (request-reply).
+type RoomAssignRequest struct {
+	ServerID      int        `json:"server_id"`
+	RoomID        int        `json:"room_id"`
+	Config        RoomConfig `json:"config"`
+	ForceInstance string     `json:"force_instance,omitempty"` // admin override
+}
+
+func (r RoomAssignRequest) Validate() error {
+	if r.ServerID <= 0 {
+		return fmt.Errorf("vogcluster: RoomAssignRequest.server_id must be positive, got %d", r.ServerID)
+	}
+	if r.RoomID <= 0 {
+		return fmt.Errorf("vogcluster: RoomAssignRequest.room_id must be positive, got %d", r.RoomID)
+	}
+	if err := r.Config.Validate(); err != nil {
+		return fmt.Errorf("vogcluster: RoomAssignRequest.config: %w", err)
+	}
+	return nil
+}
+
+// RoomAssignReply is the coordinator's response to a RoomAssignRequest.
+type RoomAssignReply struct {
+	Assigned   bool   `json:"assigned"`
+	InstanceID string `json:"instance_id,omitempty"`
+	Address    string `json:"address,omitempty"`
+	Reason     string `json:"reason,omitempty"` // "no_instances", "no_capacity"
+}
+
+func (r RoomAssignReply) Validate() error {
+	if !r.Assigned && r.Reason == "" {
+		return fmt.Errorf("vogcluster: RoomAssignReply.reason is required when not assigned")
+	}
+	return nil
+}
+
 // RoomPrepare is sent during migration: the coordinator asks the
 // destination instance to load room state in advance, before the source
 // instance is told to release.

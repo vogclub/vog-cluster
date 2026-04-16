@@ -31,6 +31,10 @@ const (
 	// SubjectClusterAdminRebalance: admin -> coordinator, request-reply
 	// for AdminRebalanceRequest / AdminRebalanceResponse.
 	SubjectClusterAdminRebalance = "vog.cluster.admin.rebalance"
+
+	// SubjectClusterRoomsAssignRequest is the request-reply subject for
+	// on-demand room assignment. vog-spaces API sends, coordinator replies.
+	SubjectClusterRoomsAssignRequest = "vog.cluster.rooms.assign.request"
 )
 
 // SubjectClusterGameHeartbeat returns the subject a specific game

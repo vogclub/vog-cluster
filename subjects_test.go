@@ -157,6 +157,7 @@ func TestRequiresJetStreamCoversAllKnownSubjects(t *testing.T) {
 		SubjectClusterCommand("x"),
 		SubjectClusterRoomReady(1, 101),
 		SubjectClusterInstanceStatus("game-1"),
+		SubjectClusterRoomsAssignRequest,
 		SubjectGameRoomInput("x"),
 		SubjectGameRoomBroadcast("x"),
 		SubjectLobbyOutput("x"),
@@ -176,9 +177,10 @@ func TestRequiresJetStreamCoversAllKnownSubjects(t *testing.T) {
 		SubjectClusterRoomsRelease("x"):        true,
 		SubjectClusterRoomsPrepare("x"):        true,
 		SubjectClusterCommand("x"):             true,
-		SubjectClusterRoomReady(1, 101):        true,
-		SubjectClusterInstanceStatus("game-1"): true,
-		SubjectRatingUpdated("x"):              true,
+		SubjectClusterRoomReady(1, 101):         true,
+		SubjectClusterInstanceStatus("game-1"):  true,
+		SubjectClusterRoomsAssignRequest:        true,
+		SubjectRatingUpdated("x"):               true,
 	}
 	for _, subj := range known {
 		got := RequiresJetStream(subj)

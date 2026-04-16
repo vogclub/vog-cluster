@@ -61,10 +61,11 @@ func (m GameRegister) Validate() error {
 
 // RoomLoad reports per-room load metrics inside a heartbeat.
 type RoomLoad struct {
-	RoomID    string `json:"room_id"`
-	Tables    int    `json:"tables"`
-	Players   int    `json:"players"`
-	SlotsUsed int    `json:"slots_used"`
+	RoomID      string `json:"room_id"`
+	Tables      int    `json:"tables"`
+	Players     int    `json:"players"`
+	RealPlayers int    `json:"real_players"`
+	SlotsUsed   int    `json:"slots_used"`
 }
 
 // Validate reports whether the per-room load report is well-formed.
