@@ -145,6 +145,9 @@ func TestRequiresJetStreamCoversAllKnownSubjects(t *testing.T) {
 		SubjectClusterGameRegister,
 		SubjectClusterRoutingUpdate,
 		SubjectStatsOnline,
+		SubjectClusterAdminMigrate,
+		SubjectClusterAdminDrain,
+		SubjectClusterAdminRebalance,
 		SubjectClusterGameHeartbeat("x"),
 		SubjectClusterGameDrain("x"),
 		SubjectClusterGameDeregister("x"),
@@ -152,6 +155,8 @@ func TestRequiresJetStreamCoversAllKnownSubjects(t *testing.T) {
 		SubjectClusterRoomsRelease("x"),
 		SubjectClusterRoomsPrepare("x"),
 		SubjectClusterCommand("x"),
+		SubjectClusterRoomReady(1, 101),
+		SubjectClusterInstanceStatus("game-1"),
 		SubjectGameRoomInput("x"),
 		SubjectGameRoomBroadcast("x"),
 		SubjectLobbyOutput("x"),
@@ -159,16 +164,21 @@ func TestRequiresJetStreamCoversAllKnownSubjects(t *testing.T) {
 	}
 	// Build the set of expected JetStream subjects from the spec.
 	jetstream := map[string]bool{
-		SubjectClusterGameRegister:        true,
-		SubjectClusterRoutingUpdate:       true,
-		SubjectClusterGameHeartbeat("x"):  true,
-		SubjectClusterGameDrain("x"):      true,
-		SubjectClusterGameDeregister("x"): true,
-		SubjectClusterRoomsAssign("x"):    true,
-		SubjectClusterRoomsRelease("x"):   true,
-		SubjectClusterRoomsPrepare("x"):   true,
-		SubjectClusterCommand("x"):        true,
-		SubjectRatingUpdated("x"):         true,
+		SubjectClusterGameRegister:             true,
+		SubjectClusterRoutingUpdate:            true,
+		SubjectClusterAdminMigrate:             true,
+		SubjectClusterAdminDrain:               true,
+		SubjectClusterAdminRebalance:           true,
+		SubjectClusterGameHeartbeat("x"):       true,
+		SubjectClusterGameDrain("x"):           true,
+		SubjectClusterGameDeregister("x"):      true,
+		SubjectClusterRoomsAssign("x"):         true,
+		SubjectClusterRoomsRelease("x"):        true,
+		SubjectClusterRoomsPrepare("x"):        true,
+		SubjectClusterCommand("x"):             true,
+		SubjectClusterRoomReady(1, 101):        true,
+		SubjectClusterInstanceStatus("game-1"): true,
+		SubjectRatingUpdated("x"):              true,
 	}
 	for _, subj := range known {
 		got := RequiresJetStream(subj)
@@ -185,5 +195,29 @@ func TestRequiresJetStreamUnknownReturnsFalse(t *testing.T) {
 	}
 	if RequiresJetStream("not.a.vog.subject") != false {
 		t.Errorf("non-vog subject should return false")
+	}
+}
+
+func TestAdminAndInstanceStatusSubjects(t *testing.T) {
+	cases := []struct {
+		name      string
+		subject   string
+		jetstream bool
+	}{
+		{"admin migrate", SubjectClusterAdminMigrate, true},
+		{"admin drain", SubjectClusterAdminDrain, true},
+		{"admin rebalance", SubjectClusterAdminRebalance, true},
+		{"room ready", SubjectClusterRoomReady(1, 101), true},
+		{"instance status", SubjectClusterInstanceStatus("game-1"), true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.subject == "" {
+				t.Fatalf("empty subject")
+			}
+			if got := RequiresJetStream(tc.subject); got != tc.jetstream {
+				t.Fatalf("RequiresJetStream(%q) = %v, want %v", tc.subject, got, tc.jetstream)
+			}
+		})
 	}
 }

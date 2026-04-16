@@ -1,4 +1,4 @@
-module vogclub.com/vog-cluster
+module github.com/vogclub/vog-cluster
 
 go 1.26.0
 
