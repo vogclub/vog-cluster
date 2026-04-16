@@ -15,7 +15,7 @@ in vog-arch for the full architecture.
 ## Install
 
 ```bash
-go get vogclub.com/vog-cluster
+go get github.com/vogclub/vog-cluster
 ```
 
 ## Subjects
@@ -47,7 +47,7 @@ Use `RequiresJetStream(subject)` to classify any subject at runtime.
 ```go
 import (
     "github.com/nats-io/nats.go"
-    vogcluster "vogclub.com/vog-cluster"
+    vogcluster "github.com/vogclub/vog-cluster"
 )
 
 nc, _ := nats.Connect(nats.DefaultURL)

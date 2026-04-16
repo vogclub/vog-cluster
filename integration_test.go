@@ -9,7 +9,7 @@ import (
 	"github.com/nats-io/nats-server/v2/server"
 	natsd "github.com/nats-io/nats-server/v2/test"
 	"github.com/nats-io/nats.go"
-	vogcluster "vogclub.com/vog-cluster"
+	vogcluster "github.com/vogclub/vog-cluster"
 )
 
 func startEmbeddedNATS(t *testing.T) *server.Server {
