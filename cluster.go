@@ -66,6 +66,12 @@ type RoomLoad struct {
 	Players     int    `json:"players"`
 	RealPlayers int    `json:"real_players"`
 	SlotsUsed   int    `json:"slots_used"`
+	// EmptySeconds is how long the room has been empty of real players.
+	// 0 means the room has never been populated — coordinator must NOT
+	// start the IdleReaper countdown (`cluster:room:{id}:idle_since`)
+	// for such rooms. Set to >0 once a real player has joined and then
+	// left.
+	EmptySeconds int64 `json:"empty_seconds,omitempty"`
 }
 
 // Validate reports whether the per-room load report is well-formed.
@@ -81,6 +87,9 @@ func (r RoomLoad) Validate() error {
 	}
 	if r.SlotsUsed < 0 {
 		return fmt.Errorf("vogcluster: RoomLoad.slots_used must be non-negative, got %d", r.SlotsUsed)
+	}
+	if r.EmptySeconds < 0 {
+		return fmt.Errorf("vogcluster: RoomLoad.empty_seconds must be non-negative, got %d", r.EmptySeconds)
 	}
 	return nil
 }
