@@ -20,6 +20,12 @@ type RoomInput struct {
 	// UserID is the authenticated user identifier.
 	UserID string `json:"user_id"`
 
+	// Nick is the authenticated user's display name, carried from the
+	// Lobby's JWT claims. Game instances use it for events that fan
+	// out to other clients (chat, room roster snapshots) so those
+	// clients don't need a separate lookup against vog-players.
+	Nick string `json:"nick,omitempty"`
+
 	// LobbyInstanceID is the Lobby that received this client message.
 	// The game instance uses it to address responses via
 	// SubjectLobbyOutput.
