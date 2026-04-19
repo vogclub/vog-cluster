@@ -10,9 +10,11 @@ import (
 // a game instance. The instance uses this to load room state on assign
 // or migration.
 type RoomConfig struct {
-	RoomID       string          `json:"room_id"`
-	ServerID     int             `json:"server_id"`
-	RatingID     int             `json:"rating_id"`
+	RoomID string `json:"room_id"`
+	// ServerID mirrors RoomAssignRequest.ServerID. vog-spaces populates
+	// both consistently when constructing the assign request.
+	ServerID int `json:"server_id"`
+	RatingID int `json:"rating_id"`
 	Name         string          `json:"name"`
 	GameType     string          `json:"game_type"`
 	RatingType   string          `json:"rating_type"`
