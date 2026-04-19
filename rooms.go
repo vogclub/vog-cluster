@@ -11,6 +11,8 @@ import (
 // or migration.
 type RoomConfig struct {
 	RoomID       string          `json:"room_id"`
+	ServerID     int             `json:"server_id"`
+	RatingID     int             `json:"rating_id"`
 	Name         string          `json:"name"`
 	GameType     string          `json:"game_type"`
 	RatingType   string          `json:"rating_type"`
@@ -35,6 +37,12 @@ func (r RoomConfig) SlotCost() int {
 func (r RoomConfig) Validate() error {
 	if r.RoomID == "" {
 		return errors.New("vogcluster: RoomConfig.room_id is required")
+	}
+	if r.ServerID <= 0 {
+		return fmt.Errorf("vogcluster: RoomConfig.server_id must be positive, got %d", r.ServerID)
+	}
+	if r.RatingID <= 0 {
+		return fmt.Errorf("vogcluster: RoomConfig.rating_id must be positive, got %d", r.RatingID)
 	}
 	if r.GameType == "" {
 		return errors.New("vogcluster: RoomConfig.game_type is required")

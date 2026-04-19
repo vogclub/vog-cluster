@@ -9,6 +9,8 @@ import (
 func sampleRoomConfig() RoomConfig {
 	return RoomConfig{
 		RoomID:       "br-rapid-1",
+		ServerID:     1,
+		RatingID:     1,
 		Name:         "Backgammon Rapid #1",
 		GameType:     "backgammon",
 		RatingType:   "br-rapid",
@@ -41,6 +43,10 @@ func TestRoomConfigValidate(t *testing.T) {
 		mutate func(*RoomConfig)
 	}{
 		{"empty room_id", func(c *RoomConfig) { c.RoomID = "" }},
+		{"zero server_id", func(c *RoomConfig) { c.ServerID = 0 }},
+		{"negative server_id", func(c *RoomConfig) { c.ServerID = -1 }},
+		{"zero rating_id", func(c *RoomConfig) { c.RatingID = 0 }},
+		{"negative rating_id", func(c *RoomConfig) { c.RatingID = -1 }},
 		{"empty game_type", func(c *RoomConfig) { c.GameType = "" }},
 		{"empty rating_type", func(c *RoomConfig) { c.RatingType = "" }},
 		{"invalid priority", func(c *RoomConfig) { c.Priority = "urgent" }},
